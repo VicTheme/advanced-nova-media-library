@@ -21,6 +21,8 @@ class MediaController extends Controller
         $searchText = $request->input('search_text') ?: null;
         $perPage = $request->input('per_page') ?: 18;
 
+        $uniqueIds = $mediaClass::query()->selectRaw('MIN(id) as id')->groupBy('name')->pluck('id');
+
         $query = null;
 
         if ($searchText && $mediaClassIsSearchable) {
@@ -45,7 +47,7 @@ class MediaController extends Controller
             $query->whereNotIn('collection_name', $hideCollections);
         }
 
-        $results = $query->paginate($perPage);
+        $results = $query->whereIn('id',$uniqueIds)->paginate($perPage);
 
         return MediaResource::collection($results);
     }
